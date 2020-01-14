@@ -67,7 +67,7 @@ func main() {
 	r.HandleFunc("/api/book/{id}", update).Methods("PUT")
 	r.HandleFunc("/api/book/{id}", delete).Methods("DELETE")
 
-	// r.HandleFunc("/api/student", findStudent).Methods("GET")
+	r.HandleFunc("/api/student/{id}", findOneStudent).Methods("GET")
 	r.HandleFunc("/api/students", getAll).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", r))

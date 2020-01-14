@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type student struct {
@@ -23,6 +25,13 @@ type response struct {
 	Message string    `json:"message"`
 	Meta    meta      `json:"meta"`
 	Data    []student `json:"data"`
+}
+
+type responseOne struct {
+	Status  int     `json:"status"`
+	Message string  `json:"message"`
+	Meta    meta    `json:"meta"`
+	Data    student `json:"data"`
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +60,46 @@ func getAll(w http.ResponseWriter, r *http.Request) {
 
 		} else {
 			arrUser = append(arrUser, users)
+		}
+	}
+
+	response.Status = 1
+	response.Message = "Success"
+	response.Data = arrUser
+	response.Meta = meta
+	fmt.Println(arrUser)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func findOneStudent(w http.ResponseWriter, r *http.Request) {
+	studentID := mux.Vars(r)["id"]
+	var users student
+	var arrUser student
+	var response responseOne
+	var meta meta
+
+	db, err := connect()
+	defer db.Close()
+
+	rows, err := db.Query("select * from tb_student where id = ? LIMIT 1", studentID)
+	if err != nil {
+		log.Print(err)
+	}
+	columns, err := rows.Columns()
+	if err != nil {
+		log.Print(err)
+	}
+	count := len(columns)
+	meta.TotalData = count
+
+	for rows.Next() {
+		if err := rows.Scan(&users.ID, &users.Name, &users.Age, &users.Grade); err != nil {
+			log.Fatal(err.Error())
+
+		} else {
+			arrUser = users
 		}
 	}
 
